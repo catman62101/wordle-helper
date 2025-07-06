@@ -1,6 +1,12 @@
-use std::io::{BufRead, BufReader, Read};
+use std::{
+    collections::HashSet,
+    io::{BufRead, BufReader, Read},
+};
 
-use crate::{trie::Trie, util::get_letter_counts};
+use crate::{
+    trie::Trie,
+    util::{get_letter_counts, update_missing_letters},
+};
 
 pub struct Dictionary {
     trie: Option<Trie>,
@@ -39,12 +45,14 @@ impl Dictionary {
         &mut self,
         correct_letters: &str,
         misplaced_letters: &str,
-        missing_letters: &str,
+        incorrect_letters: &str,
+        missing_letters: &HashSet<char>,
     ) {
         self.trie = match &self.trie {
             Some(trie) => trie.pruned_copy(
                 correct_letters.chars().peekable(),
                 misplaced_letters.chars().peekable(),
+                incorrect_letters.chars().peekable(),
                 &mut get_letter_counts(correct_letters, misplaced_letters),
                 missing_letters,
                 String::from(""),

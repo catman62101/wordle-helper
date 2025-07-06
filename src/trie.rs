@@ -1,4 +1,8 @@
-use std::{collections::HashMap, iter::Peekable, str::Chars};
+use std::{
+    collections::{HashMap, HashSet},
+    iter::Peekable,
+    str::Chars,
+};
 
 use crate::util::has_letter_counts;
 
@@ -64,8 +68,9 @@ impl Trie {
         &self,
         mut correct_pattern_iter: Peekable<Chars>,
         mut misplaced_pattern_iter: Peekable<Chars>,
+        mut incorrect_pattern_iter: Peekable<Chars>,
         letter_counts: &HashMap<char, isize>,
-        missing_letters: &str,
+        missing_letters: &HashSet<char>,
         word: String,
     ) -> Option<Self> {
         if self.is_end_of_word {
@@ -85,6 +90,10 @@ impl Trie {
             Some(letter) => letter,
             None => return None,
         };
+        let incorrect_letter = match incorrect_pattern_iter.next() {
+            Some(letter) => letter,
+            None => return None,
+        };
 
         let return_node = match correct_letter {
             '*' => {
@@ -93,12 +102,15 @@ impl Trie {
                     .iter()
                     .filter(|(letter, _)| {
                         // TODO: make missing_letters into a bitset
-                        **letter != misplaced_letter && !missing_letters.contains(**letter)
+                        **letter != misplaced_letter
+                            && **letter != incorrect_letter
+                            && !missing_letters.contains(*letter)
                     })
                     .for_each(|(letter, child)| {
                         if let Some(child) = child.pruned_copy(
                             correct_pattern_iter.clone(),
                             misplaced_pattern_iter.clone(),
+                            incorrect_pattern_iter.clone(),
                             letter_counts,
                             missing_letters,
                             word.clone() + &letter.to_string(),
@@ -115,6 +127,7 @@ impl Trie {
                     if let Some(child_copy) = child.pruned_copy(
                         correct_pattern_iter.clone(),
                         misplaced_pattern_iter.clone(),
+                        incorrect_pattern_iter.clone(),
                         letter_counts,
                         missing_letters,
                         word + &letter.to_string(),
@@ -155,16 +168,17 @@ mod tests {
         words.iter().for_each(|word| t.insert(word));
         let correct_letters = "at***";
         let misplaced_letters = "*****";
+        let incorrect_letters = "****s";
         let pruned = t
             .pruned_copy(
                 correct_letters.chars().peekable(),
                 misplaced_letters.chars().peekable(),
-                &mut get_letter_counts(correct_letters, misplaced_letters),
-                "os",
+                incorrect_letters.chars().peekable(),
+                &get_letter_counts(correct_letters, misplaced_letters),
+                &mut Default::default(),
                 String::from(""),
             )
             .unwrap();
-        println!("{:?}", pruned);
         let pruned_words = pruned.words();
         assert_eq!(pruned_words, vec![String::from("atria")]);
     }

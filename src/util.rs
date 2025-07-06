@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 pub fn validate_input(input: &str, name: &str) -> Result<(), String> {
     if input.len() != 5 || !input.chars().all(|c| c.is_alphabetic() || c == '*') {
@@ -29,6 +29,12 @@ pub fn has_letter_counts(word: &str, letter_counts: &HashMap<char, isize>) -> bo
     letter_counts
         .iter()
         .all(|(c, count)| count <= counts.get(c).unwrap_or(&0_isize))
+}
+
+pub fn update_missing_letters(incorrect: &str, missing: &mut HashSet<char>) {
+    incorrect.chars().filter(|c| *c != '*').for_each(|c| {
+        missing.insert(c);
+    });
 }
 
 #[cfg(test)]

@@ -2,9 +2,13 @@ use std::{fs::File, process::exit};
 
 use clap::{CommandFactory, Parser};
 
-use crate::{dictionary::Dictionary, util::validate_input};
+use crate::{
+    dictionary::Dictionary,
+    util::{update_missing_letters, validate_input},
+};
 
 pub mod dictionary;
+pub mod repl;
 pub mod trie;
 pub mod util;
 
@@ -13,7 +17,7 @@ pub mod util;
 #[command(version, about, long_about = None)]
 struct Args {
     /// Correct letters
-    #[arg(short, long)]
+    #[arg(short, long, default_value = "******")]
     correct: String,
 
     /// Misplaced letters
@@ -21,18 +25,26 @@ struct Args {
     misplaced: String,
 
     /// Incorrect letters
-    #[arg(short, long, default_value = "*****")]
+    #[arg(short, long, default_value = "")]
     incorrect: String,
 
     /// Dictionary path
     #[arg(short, long)]
     dictionary: String,
+
+    /// REPL mode
+    #[arg(short, long)]
+    repl: bool,
 }
 
 fn main() {
     let args = Args::parse();
     let dict_file = File::open(args.dictionary).unwrap();
     let mut dictionary = Dictionary::read_from_file(dict_file).unwrap();
+    if args.repl {
+        repl::repl(&mut dictionary);
+        return;
+    }
     let valid_input = [
         validate_input(&args.correct, "correct"),
         validate_input(&args.misplaced, "misplaced"),
@@ -53,6 +65,7 @@ fn main() {
         args.correct.as_str(),
         args.misplaced.as_str(),
         args.incorrect.as_str(),
+        &mut Default::default(),
     );
     let possible_words = dictionary.words();
     for word in possible_words {
