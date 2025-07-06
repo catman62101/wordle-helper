@@ -82,20 +82,11 @@ impl Trie {
                 is_end_of_word: true,
             });
         }
-        let correct_letter = match correct_pattern_iter.next() {
-            Some(letter) => letter,
-            None => return None,
-        };
-        let misplaced_letter = match misplaced_pattern_iter.next() {
-            Some(letter) => letter,
-            None => return None,
-        };
-        let incorrect_letter = match incorrect_pattern_iter.next() {
-            Some(letter) => letter,
-            None => return None,
-        };
+        let correct_letter = correct_pattern_iter.next()?;
+        let misplaced_letter = misplaced_pattern_iter.next()?;
+        let incorrect_letter = incorrect_pattern_iter.next()?;
 
-        let return_node = match correct_letter {
+        match correct_letter {
             '*' => {
                 let mut new_node = Trie::default();
                 self.children
@@ -138,9 +129,7 @@ impl Trie {
 
                 Some(new_node)
             }
-        };
-
-        return_node
+        }
     }
 }
 

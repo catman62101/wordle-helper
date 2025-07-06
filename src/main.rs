@@ -2,10 +2,7 @@ use std::{fs::File, process::exit};
 
 use clap::{CommandFactory, Parser};
 
-use crate::{
-    dictionary::Dictionary,
-    util::{update_missing_letters, validate_input},
-};
+use crate::{dictionary::Dictionary, util::validate_input};
 
 pub mod dictionary;
 pub mod repl;
@@ -65,7 +62,7 @@ fn main() {
         args.correct.as_str(),
         args.misplaced.as_str(),
         args.incorrect.as_str(),
-        &mut Default::default(),
+        &Default::default(),
     );
     let possible_words = dictionary.words();
     for word in possible_words {

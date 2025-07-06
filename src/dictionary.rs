@@ -3,10 +3,7 @@ use std::{
     io::{BufRead, BufReader, Read},
 };
 
-use crate::{
-    trie::Trie,
-    util::{get_letter_counts, update_missing_letters},
-};
+use crate::{trie::Trie, util::get_letter_counts};
 
 pub struct Dictionary {
     trie: Option<Trie>,
@@ -53,7 +50,7 @@ impl Dictionary {
                 correct_letters.chars().peekable(),
                 misplaced_letters.chars().peekable(),
                 incorrect_letters.chars().peekable(),
-                &mut get_letter_counts(correct_letters, misplaced_letters),
+                &get_letter_counts(correct_letters, misplaced_letters),
                 missing_letters,
                 String::from(""),
             ),
